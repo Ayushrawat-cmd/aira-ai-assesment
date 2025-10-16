@@ -37,3 +37,4 @@ Footer
 Dockerfile
 *.yml
 .files*
+qdrant_data/

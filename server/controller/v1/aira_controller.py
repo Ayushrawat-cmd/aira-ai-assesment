@@ -11,7 +11,7 @@ from fastapi.exceptions import HTTPException, RequestValidationError
 from services.chatbot_service import ChatbotService
 from services.ingest_url_service import IngestUrlService
 from schema.ingest_url_schema import IngestUrlReqSchema
-from schema.chatbot_req_schema import ChatbotReqSchema
+from schema.chatbot_schema import ChatbotReqSchema, ChatbotResSchema
 
 # Logger Instance
 logger = Logger.get_logger(__name__)
@@ -80,8 +80,8 @@ class ChatbotController():
     async def stream_query(self, request: Request, req: ChatbotReqSchema = Query()):
         logger.debug(f"{self.__class__.__name__} : stream_query")
         try:
-            user_id = request.headers.get("x-user-id", "")
-            return EventSourceResponse(self.service.get_response(user_id,  req.chat_id, req.query, req.agent_type),status_code=200)
+            
+            return EventSourceResponse(self.chatbot_service.get_response(   req.query),status_code=200)
 
         except Exception as e:
             logger.error(f"{self.__class__.__name__} : stream_query : {str(e)}")
