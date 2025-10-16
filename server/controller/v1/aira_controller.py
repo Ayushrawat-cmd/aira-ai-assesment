@@ -53,6 +53,22 @@ class ChatbotController():
             logger.error(f"{self.__class__.__name__} : ingest_url : {str(e)}")
             return throw_error(status=500, message="Failed to ingest URL", error_code="INTERNAL_SERVER_ERROR", error=str(e))
 
+    @controller.route.get(
+        '/get-relevant-docs',
+        tags=['chatbot_router'],
+        summary= 'Get Relevant Docs from the RAG system',
+        status_code= 200,
+    )
+    async def get_relevant_docs(self, request: Request, req: ChatbotReqSchema = Query()):
+        logger.debug(f"{self.__class__.__name__} : get_relevant_docs")
+        try:
+            # user_id = request.headers.get("x-user-id", "")
+            response = self.service.get_relevant_docs(user_id, req.chat_id, req.query, req.agent_type)
+            return ORJSONResponse(content=response.model_dump(exclude_none=True), status_code=_status.HTTP_200_OK)
+        except Exception as e:
+            logger.error(f"{self.__class__.__name__} : get_relevant_docs : {str(e)}")
+            return throw_error(status=500, message="Failed to get relevant docs", error_code="INTERNAL_SERVER_ERROR", error=str(e))
+
     # MARK: - Query Processing Request Handler
     @controller.route.get(
         '/chat',

@@ -1,11 +1,14 @@
 from pymongo import AsyncMongoClient
-from .constants import MONGODB_URI, REDIS_HOST, REDIS_PASSWORD
+from .constants import MONGODB_URI, REDIS_HOST, REDIS_PASSWORD, VECTOR_DB_COLLECTION_NAME
 from functools import wraps
 from datetime import timedelta
 import os
 import redis
 import json
 from celery import Celery
+from qdrant_client import QdrantClient
+from langchain.vectorstores import Qdrant
+
 
 async def init_celery_connection():
     global celery_app
@@ -18,6 +21,18 @@ async def init_celery_connection():
         "tasks.scraper_task": {"queue": "scraper_queue"},
         "tasks.preprocess_task" : {"queue": "preprocess_queue"}
     }
+
+async def init_vector_db():
+    global qdrant_client
+    qdrant_client = QdrantClient(url="http://localhost:6333")
+
+def get_vector_db(embeddings, collection_name=VECTOR_DB_COLLECTION_NAME):
+    vectorstore = Qdrant(
+        client=qdrant_client,
+        collection_name=VECTOR_DB_COLLECTION_NAME,
+        embeddings=embeddings,
+    )
+    return vectorstore
 
 def get_celery():
     return celery_app

@@ -8,3 +8,5 @@ class IngestUrlStatus(Enum):
 
     def __str__(self):
         return self.value
+
+VECTOR_DB_COLLECTION_NAME = "url_data"

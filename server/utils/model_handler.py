@@ -1,6 +1,6 @@
 from langchain_openai import ChatOpenAI
 import os
-from utils.constant import GPT_API_KEY, GPT_ORG_ID
+from utils.constants import GPT_API_KEY, GPT_ORG_ID
 
 class ModelHandler:
     _instance = None

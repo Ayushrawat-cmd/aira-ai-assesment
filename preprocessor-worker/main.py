@@ -1,8 +1,9 @@
 from celery_config import celery_app
 from celery import signals
-from utils.constants import IngestUrlStatus
+from utils.constants import IngestUrlStatus, VECTOR_DB_COLLECTION_NAME
 from utils.embedding_model import get_embedding_model, init_embedding_model
-from utils.vector_db_connection import get_vector_db_client, init_vector_db
+from utils.vector_db_connection import get_vector_db, init_vector_db
+from langchain.vectorstores import Qdrant
 from langchain_experimental.text_splitter import SemanticChunker
 
 
@@ -48,9 +49,22 @@ def setup_embedding_model(sender, **kwargs):
     """Initialize embedding model once when Celery worker starts."""
     init_embedding_model()
     print("Embedding model initialized at worker startup")
-    init_vector_db()
+    init_vector_db(get_embedding_model())
     print("Vector DB client initialized at worker startup")
 
+
+def save_to_vector_db(processed_chunks):
+    vectorstore = get_vector_db()
+    
+    for chunk in processed_chunks:
+        vectorstore.add_texts(
+            texts=[chunk["content"]],
+            metadatas=[{
+                "title": chunk["title"],
+                "url": chunk["url"],
+            }]
+        )
+ 
 
 
 @celery_app.task(name="tasks.preprocess_task")

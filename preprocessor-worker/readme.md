@@ -1,0 +1,1 @@
+celery -A main worker --loglevel=info -E -Q preprocess_queue --concurrency=1 
