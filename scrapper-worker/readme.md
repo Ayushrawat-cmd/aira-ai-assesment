@@ -1,0 +1,1 @@
+By default the result is storing for 1 day in redis db
