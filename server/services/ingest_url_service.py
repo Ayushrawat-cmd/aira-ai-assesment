@@ -32,5 +32,13 @@ class IngestUrlService:
             logger.error(f"{self.__class__.__name__} : ingest_url : {str(e)}")
             raise e
 
+    async def get_job_status(self, task_id):
+        logger.info(f"{self.__class__.__name__} : get_job_status :: {task_id}")
+        try:
+            result = await self.job_tracker_repo.get_job_status(task_id)
+            return result
+        except Exception as e:
+            logger.error(f"{self.__class__.__name__} : get_job_status : {str(e)}")
+            raise e
 
 

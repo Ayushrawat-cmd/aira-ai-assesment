@@ -33,8 +33,9 @@ class JobTrackerRepo:
             logger.error(f"{self.__class__.__name__}: create_job : {str(e)}")
             raise e
     
-    async def get_job(self, tracker_id):
+    async def get_job_status(self, tracker_id):
         logger.debug(f"{self.__class__.__name__} : get_job")
+        self.collection =await self.db.create_collection(Collections.JOB_TRACKERS.value, check_exists=False)
         try:
             result = await self.collection.find_one({"_id": tracker_id})
             if result:

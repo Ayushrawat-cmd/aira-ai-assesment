@@ -45,13 +45,28 @@ class ChatbotController():
         status_code= 202,
     )
     async def ingest_url(self, request: Request, req: IngestUrlReqSchema = Body()):
-        logger.debug(f"{self.__class__.__name__} : ingest_url")
+        logger.info(f"{self.__class__.__name__} : ingest_url")
         try:
             response = await self.ingest_url_service.ingest_url(req.url, req.email)
             return ORJSONResponse(content=response.model_dump(exclude_none=True), status_code=_status.HTTP_202_ACCEPTED)
         except Exception as e:
             logger.error(f"{self.__class__.__name__} : ingest_url : {str(e)}")
             return throw_error(status=500, message="Failed to ingest URL", error_code="INTERNAL_SERVER_ERROR", error=str(e))
+
+    @controller.router.get(
+        '/job-status',
+        tags=['chatbot_router'],
+        summary= 'Get Job Status',
+        status_code= 200,
+    )
+    async def get_job_status(self, request: Request, task_id:str= Query()):
+        logger.info(f"{self.__class__.__name__} : get_job_status")
+        try:
+            response = await self.ingest_url_service.get_job_status(task_id)
+            return ORJSONResponse(content=response, status_code=_status.HTTP_200_OK)
+        except Exception as e:
+            logger.error(f"{self.__class__.__name__} : get_job_status : {str(e)}")
+            return throw_error(status=500, message="Failed to get job status", error_code="INTERNAL_SERVER_ERROR", error=str(e))
 
     @controller.route.get(
         '/relevant-docs',
@@ -60,7 +75,7 @@ class ChatbotController():
         status_code= 200,
     )
     async def get_relevant_docs(self, request: Request, query:str= Query()):
-        logger.debug(f"{self.__class__.__name__} : get_relevant_docs")
+        logger.info(f"{self.__class__.__name__} : get_relevant_docs")
         try:
             # user_id = request.headers.get("x-user-id", "")
             response = await self.chatbot_service.get_relevant_docs( query)
@@ -78,7 +93,7 @@ class ChatbotController():
         response_class=StreamingResponse
     )
     async def stream_query(self, request: Request, req: ChatbotReqSchema = Query()):
-        logger.debug(f"{self.__class__.__name__} : stream_query")
+        logger.info(f"{self.__class__.__name__} : stream_query")
         try:
             
             return EventSourceResponse(self.chatbot_service.get_response(   req.query),status_code=200)
