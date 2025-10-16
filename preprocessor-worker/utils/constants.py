@@ -3,8 +3,8 @@ from enum import Enum
 class IngestUrlStatus(Enum):
     PENDING = "PENDING"
     SCRAPPED = "SCRAPPED"
-    SCRAPPING_FAILED = "SCRAPPING_FAILED"
-    COMPLETED = "INGESTED"
+    PREPROCESSING_FAILED = "PREPROCESSING_FAILED"
+    INGESTED = "INGESTED"
 
     def __str__(self):
         return self.value
