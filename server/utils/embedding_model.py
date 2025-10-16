@@ -2,7 +2,7 @@ import requests
 from langchain_community.embeddings import HuggingFaceEmbeddings
 
 # embeddings = None
-def init_embedding_model(model = "mixedbread-ai/mxbai-embed-large-v1"):
+async def init_embedding_model(model = "mixedbread-ai/mxbai-embed-large-v1"):
     # # Define the path to the pre-trained model you want to use
     global embeddings
     modelPath = model

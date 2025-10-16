@@ -73,6 +73,7 @@ def preprocess_task(task_id, url, email, data):
         print(f"Scraping URL: {url}, email: {email}, data: {data}")
         embeddings = get_embedding_model()
         processed_chunks = semantic_preprocess_wikipedia_data(data,embeddings)
+        save_to_vector_db(processed_chunks)
         result = {"url": url, "status": IngestUrlStatus.INGESTED.value, "email": email, "data":data }
         print(preprocess_task.request.id)
         return {"url": url, "status": IngestUrlStatus.INGESTED.value, "email": email, "processed_chunks": processed_chunks} 

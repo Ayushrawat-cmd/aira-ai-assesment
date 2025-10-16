@@ -10,4 +10,4 @@ class ResStatus(Enum):
     SUCCESS = "success"
     FAIL = "fail"
 
-VECTOR_DB_COLLECTION_NAME = "url_data"
+VECTOR_DB_COLLECTION_NAME = "wiki_data"

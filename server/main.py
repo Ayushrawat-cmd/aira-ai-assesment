@@ -4,7 +4,8 @@ import uvicorn
 from utils.config import Config
 from utils.middleware import LogIncomingRequest, exception_handler, validation_exception_handler
 from utils.middleware.exception_handlers import http_exception_handler
-from utils.db_connection import init_celery_connection
+from utils.db_connection import init_celery_connection, init_vector_db
+from utils.embedding_model import init_embedding_model
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Depends
@@ -19,6 +20,8 @@ from fastapi_router_controller import Controller, ControllersTags
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await init_celery_connection()
+    await init_vector_db()
+    await init_embedding_model()
     yield
     # await close_mongo_connection()
 
@@ -45,7 +48,6 @@ app.add_middleware(LogIncomingRequest)
 ####  controllers in the main app   #####
 #########################################
 for router in Controller.routers():
-    print(f"Including router: {router.prefix}")
     app.include_router(router)
 
 # Server configuration

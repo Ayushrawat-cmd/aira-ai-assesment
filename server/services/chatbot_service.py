@@ -1,6 +1,25 @@
 from utils.model_handler import ModelHandler
 from repository.vector_db_repo import VectorDBRepo  
+from langchain_core.prompts import ChatPromptTemplate
+from utils.logger import Logger
 
+logger = Logger.get_logger(__name__)
+
+system_prompt = """
+You are an AI assistant that helps people find information.
+You should answer the user's query as truthfully as possible.
+
+Context: {context}
+
+Provide a concise answer to the user's query using the context provided only.
+
+Note: If the context provided does not contain the answer, say "I don't know".
+
+"""
+
+user_prompt = """
+Query: {question}
+"""
 class ChatbotService:
 
     _instance = None
@@ -15,11 +34,22 @@ class ChatbotService:
             self.model_handler = ModelHandler()
             self.vector_db_repo = VectorDBRepo()
 
-    def __get_prompt(self, message, context, chat_history =[]):
+    def __get_prompt(self, ):
         # interval = self.input_field_extractor.extract_input_fields(message, market_types)
         prompt = ChatPromptTemplate.from_messages([
-            ("system", convo_system_prompt), 
-            ("user",convo_user_prompt)
-            ]).partial(today=today, context=context, chat_history=chat_history)
+            ("system", system_prompt), 
+            ("user",user_prompt)
+            ])
         return prompt
+    
+    async def get_relevant_docs(self, query: str, top_k: int = 5):
+        try:
+            results = await self.vector_db_repo.search_similar(
+                query,
+                top_k
+            )
+            return results
+        except Exception as e:
+            logger.error(f"{self.__class__.__name__} : get_relevant_docs : {str(e)}")
+            raise e
     

@@ -8,7 +8,7 @@ from schema.errors import throw_error
 from environment.router.urls import URLs
 from fastapi.responses import Response
 from fastapi.exceptions import HTTPException, RequestValidationError
-# from services.chatbot_service import ChatbotService
+from services.chatbot_service import ChatbotService
 from services.ingest_url_service import IngestUrlService
 from schema.ingest_url_schema import IngestUrlReqSchema
 from schema.chatbot_req_schema import ChatbotReqSchema
@@ -32,8 +32,8 @@ controller = Controller(chatbot_router, openapi_tag={
 @controller.resource()
 class ChatbotController():
 
-    def __init__(self, ingest_url_service: IngestUrlService = Depends(), ) -> None:
-        # self.service = service
+    def __init__(self, ingest_url_service: IngestUrlService = Depends(),chatbot_service: ChatbotService = Depends() ) -> None:
+        self.chatbot_service = chatbot_service
         self.ingest_url_service = ingest_url_service  
 
 
@@ -54,16 +54,16 @@ class ChatbotController():
             return throw_error(status=500, message="Failed to ingest URL", error_code="INTERNAL_SERVER_ERROR", error=str(e))
 
     @controller.route.get(
-        '/get-relevant-docs',
+        '/relevant-docs',
         tags=['chatbot_router'],
         summary= 'Get Relevant Docs from the RAG system',
         status_code= 200,
     )
-    async def get_relevant_docs(self, request: Request, req: ChatbotReqSchema = Query()):
+    async def get_relevant_docs(self, request: Request, query:str= Query()):
         logger.debug(f"{self.__class__.__name__} : get_relevant_docs")
         try:
             # user_id = request.headers.get("x-user-id", "")
-            response = self.service.get_relevant_docs(user_id, req.chat_id, req.query, req.agent_type)
+            response = await self.chatbot_service.get_relevant_docs( query)
             return ORJSONResponse(content=response.model_dump(exclude_none=True), status_code=_status.HTTP_200_OK)
         except Exception as e:
             logger.error(f"{self.__class__.__name__} : get_relevant_docs : {str(e)}")
