@@ -11,3 +11,7 @@ class ResStatus(Enum):
     FAIL = "fail"
 
 VECTOR_DB_COLLECTION_NAME = "wiki_data"
+DATABASE_NAME = "aira"
+class Collections(str, Enum):
+    JOB_TRACKERS = "job_trackers"
+    PROCESSED_CHUNKS = "processed_chunks"

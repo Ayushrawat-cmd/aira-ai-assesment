@@ -37,3 +37,4 @@ Footer
 Dockerfile
 *.yml
 .files*
+*.env

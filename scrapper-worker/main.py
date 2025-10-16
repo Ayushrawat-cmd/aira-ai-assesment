@@ -1,7 +1,11 @@
 from celery_config import celery_app
-from constants import IngestUrlStatus
+from utils.constants import IngestUrlStatus
+from celery import signals
 import requests
 from bs4 import BeautifulSoup
+from utils.mongodb_connection import init_mongo_connnection, get_mongo_client
+from utils.constants import DATABASE_NAME, Collections
+from datetime import datetime, timezone
 
 def scrape_wikipedia(url: str) -> dict:
     """
@@ -31,8 +35,16 @@ def scrape_wikipedia(url: str) -> dict:
         "content": full_text
     }
 
+@signals.worker_process_init.connect
+def setup_connections(sender, **kwargs):
+    init_mongo_connnection()
+    print("MongoDB connection initialized in worker process.")
+
 @celery_app.task(name="tasks.scraper_task")
 def scraper_task(url, email):
+    client = get_mongo_client()
+    db = client[DATABASE_NAME]
+    collection = db.get_collection(Collections.JOB_TRACKERS.value)
     try:
         print(f"Scraping URL: {url}, email: {email}")
         task_id = scraper_task.request.id
@@ -40,8 +52,18 @@ def scraper_task(url, email):
         # result = {"url": url, "status": IngestUrlStatus.SCRAPPED.value, "email": email}
         # redis_cache.set(task_id,json.dumps(result), ex=86400)
         scraped_content = scrape_wikipedia(url)
+        collection.update_one(
+            {"_id": task_id},
+            {"$set": {"status": IngestUrlStatus.SCRAPPED.value,"updated_at": datetime.now(timezone.utc)}})
         celery_app.send_task("tasks.preprocess_task", args=[task_id, url, email, scraped_content])
         return {"url":url, "status": IngestUrlStatus.SCRAPPED.value, "email":email, "scraped_content":scraped_content}
     except Exception as e:
         print(e)
+        try:
+            collection.update_one(
+                {"_id": task_id},
+                {"$set": {"status": IngestUrlStatus.SCRAPPING_FAILED.value, "error": str(e), "updated_at": datetime.now(timezone.utc)}}
+            )
+        except Exception as me:
+            print("Failed to update MongoDB with error:", me)
         return {"url":url, "status": IngestUrlStatus.SCRAPPING_FAILED.value, "email":email}

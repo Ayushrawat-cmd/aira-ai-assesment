@@ -47,7 +47,7 @@ class ChatbotController():
     async def ingest_url(self, request: Request, req: IngestUrlReqSchema = Body()):
         logger.debug(f"{self.__class__.__name__} : ingest_url")
         try:
-            response = self.ingest_url_service.ingest_url(req.url, req.email)
+            response = await self.ingest_url_service.ingest_url(req.url, req.email)
             return ORJSONResponse(content=response.model_dump(exclude_none=True), status_code=_status.HTTP_202_ACCEPTED)
         except Exception as e:
             logger.error(f"{self.__class__.__name__} : ingest_url : {str(e)}")

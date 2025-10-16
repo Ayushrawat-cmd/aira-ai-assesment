@@ -38,3 +38,4 @@ Dockerfile
 *.yml
 .files*
 qdrant_data/
+*.env

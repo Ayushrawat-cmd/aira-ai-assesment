@@ -4,7 +4,7 @@ import uvicorn
 from utils.config import Config
 from utils.middleware import LogIncomingRequest, exception_handler, validation_exception_handler
 from utils.middleware.exception_handlers import http_exception_handler
-from utils.db_connection import init_celery_connection, init_vector_db
+from utils.db_connection import init_celery_connection, init_vector_db, init_mongo_connnection, close_mongo_connection
 from utils.embedding_model import init_embedding_model
 from contextlib import asynccontextmanager
 
@@ -22,8 +22,9 @@ async def lifespan(app: FastAPI):
     await init_celery_connection()
     await init_vector_db()
     await init_embedding_model()
+    await init_mongo_connnection()
     yield
-    # await close_mongo_connection()
+    await close_mongo_connection()
 
 app = FastAPI(
     title='{}'.format(Config.read('app', 'name')),

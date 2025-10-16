@@ -2,6 +2,7 @@ from utils.db_connection import get_celery
 from utils.logger import Logger
 from uuid import uuid1
 from schema.ingest_url_schema import IngestUrlResSchema
+from repository.job_tracker_repo import JobTrackerRepo 
 
 logger = Logger.get_logger(__name__)
 
@@ -16,12 +17,14 @@ class IngestUrlService:
         if not hasattr(self, '_initialized'):
             self.celery = get_celery()
             self._initialized = True
+            self.job_tracker_repo = JobTrackerRepo()
     
 
-    def ingest_url(self, url, email):
+    async def ingest_url(self, url, email):
         logger.info(f"{self.__class__.__name__} : ingest_url :: {url}")
         try:
             task_id = str(uuid1())
+            await self.job_tracker_repo.create_job(task_id, url,email)
             self.celery.send_task('tasks.scraper_task', args=[url, email], task_id=task_id)
             return IngestUrlResSchema(task_id=task_id)
 
