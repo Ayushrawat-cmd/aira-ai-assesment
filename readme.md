@@ -71,8 +71,6 @@ graph TD
 
 ## 🧠 Tech Stack Justification
 
----
-
 ### 🐍 **Backend: FastAPI (Python)**  
 - **Why:** FastAPI offers exceptional performance (built on Starlette and Pydantic), enabling asynchronous request handling and minimal latency — crucial for AI-powered pipelines that involve scraping, preprocessing, and vector operations.  
 - **How it fits:** The API layer serves as the central hub that receives user requests, dispatches tasks to Celery, interacts with MongoDB for job tracking, and retrieves processed data or embeddings.
