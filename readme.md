@@ -69,6 +69,51 @@ graph TD
     -   **Redis**: Message broker for Celery and caching.
 -   **Web Scraping**: BeautifulSoup4, Requests
 
+## 🧠 Tech Stack Justification
+
+---
+
+### 🐍 **Backend: FastAPI (Python)**  
+- **Why:** FastAPI offers exceptional performance (built on Starlette and Pydantic), enabling asynchronous request handling and minimal latency — crucial for AI-powered pipelines that involve scraping, preprocessing, and vector operations.  
+- **How it fits:** The API layer serves as the central hub that receives user requests, dispatches tasks to Celery, interacts with MongoDB for job tracking, and retrieves processed data or embeddings.
+
+---
+
+### ⚙️ **Task Queuing: Celery**  
+- **Why:** Celery provides distributed task scheduling and reliable background job execution using Redis as a broker.  
+- **How it fits:** It decouples long-running operations like web scraping, text chunking, and embedding generation from the main API thread, ensuring FastAPI remains responsive.  
+  Each step in the pipeline (**scraping → preprocessing → embedding**) is modeled as an independent Celery task.
+
+---
+
+### 🤖 **AI / LLM Stack: LangChain + OpenAI + Hugging Face Transformers**  
+- **Why:**  
+  - **LangChain:** Enables modular text processing, document chunking, and vector embedding pipelines.  
+  - **OpenAI & Hugging Face:** Provide powerful pre-trained models for embedding generation, semantic understanding, and downstream NLP capabilities.  
+- **How it fits:** The scraped text is processed into semantically meaningful chunks using LangChain’s text splitters (e.g., `SemanticChunker`) and then embedded via Sentence-Transformer or OpenAI embeddings before being stored in Qdrant.
+
+---
+
+### 🗄️ **Databases**
+
+#### 🧩 **Qdrant (Vector Database)**  
+- **Why:** Purpose-built for similarity search and vector storage, offering high-performance nearest-neighbor lookups.  
+- **How it fits:** Each document chunk is embedded and stored in Qdrant as a vector, enabling semantic retrieval of contextually similar chunks for downstream AI tasks.
+
+#### 📘 **MongoDB (Document Store)**  
+- **Why:** Schema-flexible, JSON-like document storage ideal for tracking dynamic job data.  
+- **How it fits:** Used to store and track job metadata (e.g., URLs, user emails, and statuses like “SCRAPED”, “INGESTED”, “EMBEDDED”) and maintain logs or references to Qdrant vectors.
+
+#### ⚡ **Redis (Broker + Cache)**  
+- **Why:** Lightning-fast in-memory data store suitable for message brokering and caching.  
+- **How it fits:** Acts as Celery’s broker for asynchronous communication between the FastAPI service and worker nodes.  
+  It can also be extended for caching frequently queried job results.
+
+---
+
+### 🌐 **Web Scraping: BeautifulSoup4 + Requests**  
+- **Why:** Simple, reliable, and Pythonic tools for extracting structured data from HTML pages.  
+- **How it fits:** Used in the scraping task to fetch and parse Wikipedia (or other) pages, extract clean text content, and feed it into the preprocessing pipeline.
 ## Setup and Installation
 
 ### Prerequisites
